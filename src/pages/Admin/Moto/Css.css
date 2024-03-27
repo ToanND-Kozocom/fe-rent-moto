@@ -1,0 +1,13 @@
+.img-item{
+    position: relative !important;
+}
+.btn-close-img{
+    position: absolute!important;
+    top: 0;
+    width: 3rem;
+    right: 0;
+}
+.img-item img{
+    width: 10rem;
+    display: inline-block;
+}

@@ -1,0 +1,5 @@
+.nav-header ul li a,
+.nav-header ul li button {
+  display: block;
+  padding: 0.5rem 1rem;
+}

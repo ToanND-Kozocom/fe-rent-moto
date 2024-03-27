@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+@import url('https://site-assets.fontawesome.com/releases/v6.5.1/css/all.css');
+@import url('https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-thin.css');
+@import url('https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-solid.css');
+@import url('https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-regular.css');
+@import url('https://site-assets.fontawesome.com/releases/v6.5.1/css/sharp-light.css');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --font-family: 'Roboto', sans-serif;
+    --color-text: #292929;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  line-height: 1.5;
+  font-size: 1rem;
+  box-sizing: border-box;
+  text-rendering: optimizeSpeed;
+  color: var(--color-text);
+}
+
+/* Default element css */
+a {
+  text-decoration: none;
+  color: currentColor;
+}
+
+a:hover {
+  color: currentColor;
+}
+
+ul,
+li {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+a,
+input[type='submit'],
+button {
+  transition: all 0.2s ease;
+}
+
+a:hover,
+input[type='submit']:hover,
+button:hover {
+  transition-duration: 0.1s;
+}
