@@ -31,10 +31,16 @@ const NAV_ITEMS = [
     text: 'Order',
   },
   {
-    to: ROUTES_ADMIN.USERS.INDEX,
-    icon: 'fa-light fa-users',
-    iconActive: 'fa-solid fa-users',
-    text: 'Profile',
+    to: ROUTES_ADMIN.USER.INDEX,
+    icon: 'fa-sharp fa-light fa-users',
+    iconActive: 'fa-sharp fa-solid fa-users',
+    text: 'User',
+  },
+  {
+    to: ROUTES_ADMIN.RENT_PACKAGES,
+    icon: 'fa-sharp fa-light fa-users',
+    iconActive: 'fa-sharp fa-solid fa-users',
+    text: 'Rent Package',
   },
 ]
 
@@ -51,7 +57,7 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="sidebar w-64 md:shadow transform -translate-x-full md:translate-x-0 transition-transform duration-150 ease-in bg-indigo-900">
+    <aside className="sidebar w-64 md:shadow transform -translate-x-full md:translate-x-0 transition-transform duration-150 ease-in bg-indigo-900 min-w-60">
       <div className="sidebar-header flex items-center justify-center py-4">
         <div className="inline-flex">
           <Link to={ROUTES_ADMIN.HOME} className="inline-flex flex-row items-center">

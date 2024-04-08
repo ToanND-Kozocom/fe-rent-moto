@@ -10,7 +10,7 @@ const Modal = props => {
       <Dialog
         as="div"
         initialFocus={cancelButtonRef}
-        className="relative !z-[1302]"
+        className="relative !z-[1000]"
         onClose={close}
       >
         <Transition.Child
