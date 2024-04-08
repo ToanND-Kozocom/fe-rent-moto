@@ -5,9 +5,10 @@ import { useSidebarActive } from '@/contexts/sidebarActive'
 import { ROUTES_ADMIN } from '@/config/routes'
 import { useLoading } from '@/contexts/loading'
 import { useForm } from 'react-hook-form'
-import { Table, Input, Button, Select, Toast, Alert } from '@/components/UI'
+import { Table, Input, Button, Select, Toast, Alert, Modal } from '@/components/UI'
 import orderService from '@/services/api/admin/orderService'
 import { setErrorForInput } from '@/utils/handleErrors'
+import FormCofirmPayment from './FormConfirmPayment'
 
 const OrderUpdate = () => {
   const { setSidebarActive } = useSidebarActive()
@@ -16,6 +17,8 @@ const OrderUpdate = () => {
   const [motos, setMotos] = useState()
   const [order, setOrder] = useState()
   const [transactions, setTransactions] = useState()
+  const [isOpenModal, setIsOpenModal] = useState(false)
+
   const {
     control,
     handleSubmit,
@@ -28,7 +31,7 @@ const OrderUpdate = () => {
     defaultValues: {},
   })
 
-  const { status: statusError, user_note: userNoteError, phone_number: phoneNumberError } = errors
+  const { user_note: userNoteError, phone_number: phoneNumberError } = errors
 
   const statusList = [
     { id: 1, value: 'wait', name: 'wait' },
@@ -144,16 +147,19 @@ const OrderUpdate = () => {
       })
   }
 
+  const handleConfirmPayment = () => {
+    setIsOpenModal(true)
+  }
+
   const update = data => {
     showLoading()
     orderService
       .update(id, data)
       .then(({ message }) => {
         Toast.success(message)
-        fetchOrder(id)
       })
       .catch(err => {
-        console.log(err?.response?.data.errors)
+        Toast.error(err?.response?.data?.message)
         setErrorForInput(err, setError)
       })
       .finally(() => {
@@ -162,11 +168,11 @@ const OrderUpdate = () => {
   }
 
   const onSubmit = fields => {
-    fields = {
-      ...fields,
+    const data = {
+      phone_number: fields.phone_number,
+      user_note: fields.user_note,
     }
-    console.log(fields)
-    // update(fields)
+    update(data)
   }
 
   useEffect(() => {
@@ -183,6 +189,17 @@ const OrderUpdate = () => {
       <Table className="mt-4" columns={motoColumns} rows={motos} />
 
       <Table className="mt-4" columns={transactionColumns} rows={transactions} />
+
+      {order?.status == 'approve' && (
+        <Button
+          type="button"
+          className="mt-5 w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+          onClick={handleConfirmPayment}
+        >
+          Cofirm payment
+        </Button>
+      )}
+
       <div className="mt-4">
         <label className="text-black">ID</label>
         <Input
@@ -222,9 +239,10 @@ const OrderUpdate = () => {
         <label className="text-black">Name</label>
         <Input
           type="text"
-          className="w-full bg-white rounded-md border-gray-300 text-black px-2 py-1"
+          className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
           placeholder="name"
-          name="user_name"
+          disabled={true}
+          name="customer_name"
           control={control}
         />
       </div>
@@ -251,6 +269,23 @@ const OrderUpdate = () => {
           error={phoneNumberError}
         />
       </div>
+
+      <Modal
+        isOpen={isOpenModal}
+        close={() => {
+          setIsOpenModal(false)
+        }}
+        afterLeave={() => {
+          setMotoTypeEdit(null)
+        }}
+      >
+        <FormCofirmPayment
+          setIsOpenModal={setIsOpenModal}
+          order={order}
+          transactionColumns={transactionColumns}
+          fetchOrder={fetchOrder}
+        />
+      </Modal>
 
       <Button
         type="submit"

@@ -5,10 +5,11 @@ import { useSidebarActive } from '@/contexts/sidebarActive'
 import { ROUTES_ADMIN } from '@/config/routes'
 import { useLoading } from '@/contexts/loading'
 import { useForm } from 'react-hook-form'
-import { Input, Button, Select, Toast } from '@/components/UI'
+import { Input, Button, Select, Toast, Alert, Modal } from '@/components/UI'
 import motoTypeService from '@/services/api/admin/motoTypeService'
 import { setErrorForInput } from '@/utils/handleErrors'
 import { useNavigate } from 'react-router-dom/dist'
+import TableError from './TableError'
 import './Css.css'
 
 const MotoCreate = () => {
@@ -16,8 +17,9 @@ const MotoCreate = () => {
   const { showLoading, hideLoading } = useLoading()
   const [motoTypes, setMotoTypes] = useState()
   const [newImages, setNewImages] = useState([])
+  const [isOpenModel, setIsOpenModal] = useState(false)
+  const [importErrors, setImportErrors] = useState([])
   const navigate = useNavigate()
-
 
   const statusList = [
     { id: 0, value: 'active', name: 'active' },
@@ -42,7 +44,7 @@ const MotoCreate = () => {
     formState: { errors },
     setValue,
     setError,
-    clearErrors
+    clearErrors,
   } = useForm({
     defaultValues: defaultValues,
   })
@@ -93,6 +95,28 @@ const MotoCreate = () => {
     create(fields)
   }
 
+  const handleImportCsv = async () => {
+    const file = await Alert.inputCsv('Nhập')
+    if (file) {
+      showLoading()
+      const payload = { file: file }
+      motoService
+        .importExcel(payload)
+        .then(({ message }) => {
+          Toast.success(message)
+        })
+        .catch(err => {
+          Toast.error(err.response.data.message)
+          console.log(err.response.data)
+          setImportErrors(err.response.data.data_errors)
+          setIsOpenModal(true)
+        })
+        .finally(() => {
+          hideLoading()
+        })
+    }
+  }
+
   useEffect(() => {
     setSidebarActive(ROUTES_ADMIN.MOTO.INDEX)
   }, [])
@@ -117,7 +141,19 @@ const MotoCreate = () => {
       className="mt-4 flex flex-col bg-gray-100 rounded-lg p-4 shadow-sm"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <h1 className="font-bold text-2xl text-gray-700">Add moto</h1>
+      <div className="flex">
+        <h1 className="font-bold text-2xl text-gray-700">Add moto</h1>
+        <Button type="button" className="ml-auto gap-2" onClick={handleImportCsv}>
+          <i className="fa-regular fa-file-csv"></i>
+          <span>Import</span>
+        </Button>
+        {importErrors.length > 0 && (
+          <Button type="button" className="ml-2 gap-2" onClick={() => setIsOpenModal(true)}>
+            <i className="fa-sharp fa-solid fa-circle-exclamation"></i>
+            <span>Error</span>
+          </Button>
+        )}
+      </div>
 
       <div className="mt-4">
         <label className="text-black">Name</label>
@@ -201,6 +237,7 @@ const MotoCreate = () => {
       </div>
       {newImages.length < 5 && (
         <Input
+          name="newImages"
           type="file"
           accept="image/png, image/jpeg"
           onChange={e => {
@@ -217,6 +254,14 @@ const MotoCreate = () => {
       >
         Create
       </Button>
+      <Modal
+        isOpen={isOpenModel}
+        close={() => {
+          setIsOpenModal(false)
+        }}
+      >
+        <TableError errors={importErrors} />
+      </Modal>
     </form>
   )
 }

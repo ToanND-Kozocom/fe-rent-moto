@@ -37,7 +37,7 @@ const AuthProvider = ({ children }) => {
     const interceptor = apiClient.interceptors.response.use(
       response => response,
       error => {
-        if (error.status === 401 || error.response?.status === 401) {
+        if (error.status === 401 || error.status === 403 || error.response?.status === 401|| error.response?.status === 403) {
           authRemove()
         }
         return Promise.reject(error)

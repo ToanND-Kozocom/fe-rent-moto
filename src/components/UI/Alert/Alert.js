@@ -17,6 +17,17 @@ export const Alert ={
         callback()
       }
     });
+  },
+  async inputCsv(title){
+    const { value: file } = await Swal.fire({
+      title: title,
+      input: "file",
+      inputAttributes: {
+        "accept": ".csv",
+        "aria-label": "Input your file"
+      }
+    });
+    return file
   }
 }
 

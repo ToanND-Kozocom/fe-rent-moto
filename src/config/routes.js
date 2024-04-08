@@ -20,7 +20,7 @@ export const ROUTES_ADMIN = {
     INDEX: '/admin/orders',
     UPDATE: '/admin/orders/:id',
   },
-  USERS: {
+  USER: {
     INDEX: '/admin/users',
     UPDATE: '/admin/users/:id',
   },
@@ -29,6 +29,7 @@ export const ROUTES_ADMIN = {
     CREATE: '/admin/roles/create',
     UPDATE: '/admin/roles/:id',
   },
+  RENT_PACKAGES: '/admin/rent-packages',
 }
 
 export const ROUTES_USER = {

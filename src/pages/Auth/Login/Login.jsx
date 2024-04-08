@@ -45,53 +45,6 @@ const Login = () => {
     }
   }, [authToken])
 
-  // return (
-  //   <div className="w-screen h-screen bg-gray-200 flex justify-center items-center">
-  //     <div className="p-2 rounded-none md:rounded-lg bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 shadow-lg w-screen h-screen sm:w-[30rem] sm:h-auto">
-  //       <div className="bg-white p-10 rounded-lg shadow-2xl w-full h-full">
-  //         <form className="space-y-6" onSubmit={handleSubmit(login)}>
-  //           <h2 className="text-center text-3xl font-bold text-gray-800">ĐĂNG NHẬP</h2>
-  //           <Input
-  //             label="Email"
-  //             placeholder="Email"
-  //             name="email"
-  //             control={control}
-  //             errors={emailError}
-  //           />
-  //           <div className="relative">
-  //             <Input
-  //               label="Mật khẩu"
-  //               type={showPassword ? 'text' : 'password'}
-  //               placeholder="Mật khẩu"
-  //               name="password"
-  //               control={control}
-  //               errors={passwordError}
-  //             />
-  //             <button
-  //               type="button"
-  //               className="absolute bottom-0 right-0 px-4 py-2.5 text-lg"
-  //               onClick={() => setShowPassword(prev => !prev)}
-  //             >
-  //               <i className={`fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-  //             </button>
-  //           </div>
-  //           <Button type="submit" className="w-full">
-  //             Đăng nhập
-  //           </Button>
-  //           <div className="!mt-2 flex justify-between">
-  //             <Link className="text-blue-500 hover:text-blue-800 text-sm" href="#">
-  //               Đăng ký tài khoản
-  //             </Link>
-  //             <Link className="text-blue-500 hover:text-blue-800 text-sm" href="#" to="/product">
-  //               Quên mật khẩu?
-  //             </Link>
-  //           </div>
-  //         </form>
-  //       </div>
-  //     </div>
-  //   </div>
-  // )
-
   return (
     <section class="bg-gray-50 dark:bg-gray-900">
       <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">

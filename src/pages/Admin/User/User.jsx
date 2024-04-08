@@ -2,24 +2,23 @@ import { useEffect, useState } from 'react'
 import { ROUTES_ADMIN } from '@/config/routes'
 import { useSidebarActive } from '@/contexts/sidebarActive'
 import { useLoading } from '@/contexts/loading'
-import orderService from '@/services/api/admin/orderService'
+import userService from '@/services/api/admin/userService'
 import useHandleError from '@/hooks/useHandleError'
 import { DEFAULT_PAGINATION_OBJECT } from '@/config/define'
 import setPaginationData from '@/utils/pagination'
-import { Table, Button, Select, Input, Badge } from '@/components/UI'
+import { Table, Button, Select, Input, Badge, Alert, Toast } from '@/components/UI'
 import { useNavigate } from 'react-router-dom/dist'
 import { useForm } from 'react-hook-form'
 
-const Order = () => {
+const User = () => {
   const defaultValues = {
-    phone_number: '',
-    license_plate: '',
-    moto_type_id: '',
+    name: '',
+    status: '',
     sort: '',
   }
   const { setSidebarActive } = useSidebarActive()
   const { showLoading, hideLoading } = useLoading()
-  const [orders, setOrders] = useState([])
+  const [users, setUsers] = useState([])
   const [pagination, setPagination] = useState(DEFAULT_PAGINATION_OBJECT)
   const [dataSearch, setDataSearch] = useState(defaultValues)
   const { handleResponseError } = useHandleError()
@@ -32,56 +31,36 @@ const Order = () => {
     },
     {
       headerName: 'User name',
-      field: 'customer_name',
+      field: 'name',
     },
     {
-      headerName: 'status',
-      field: 'status',
-      valueGetter: row => {
-        switch (row.status) {
-          case 'approve':
-            return <Badge className="bg-blue-100">{row.status}</Badge>
-          case 'wait':
-            return <Badge className="bg-yellow-100">{row.status}</Badge>
-          case 'rent':
-            return <Badge className="bg-gray-100">{row.status}</Badge>
-          case 'deny':
-            return <Badge className="bg-red-100">{row.status}</Badge>
-          case 'cancel':
-            return <Badge className="bg-red-100">{row.status}</Badge>
-          case 'complete':
-            return <Badge className="bg-green-100">{row.status}</Badge>
-        }
-      },
-    },
-    {
-      headerName: 'Start date',
-      field: 'start_date',
-    },
-    {
-      headerName: 'End date',
-      field: 'end_date',
-    },
-    {
-      headerName: 'User note',
-      field: 'user_note',
+      headerName: 'Email',
+      field: 'email',
     },
     {
       headerName: 'Phone number',
       field: 'phone_number',
     },
     {
-      headerName: 'Rent package',
-      field: 'rent_package',
-      valueGetter: row => {
-        return row.rent_package_detail.rent_package.name ?? ''
-      },
+      headerName: 'Dob',
+      field: 'dob',
     },
     {
-      headerName: 'Date complete',
-      field: 'date_complete',
+      headerName: 'Address',
+      field: 'address',
+    },
+    {
+      headerName: 'status',
+      field: 'status',
       valueGetter: row => {
-        return row.date_complete ?? ''
+        switch (row.status) {
+          case 'register':
+            return <Badge className="bg-yellow-100">{row.status}</Badge>
+          case 'active':
+            return <Badge className="bg-green-100">{row.status}</Badge>
+          case 'block':
+            return <Badge className="bg-red-100">{row.status}</Badge>
+        }
       },
     },
     {
@@ -90,9 +69,39 @@ const Order = () => {
       valueGetter: row => {
         return (
           <div className="flex justify-end gap-5">
+            {row.status == 'active' && (
+              <Button
+                className="!bg-red-700"
+                onClick={() => {
+                  handleBlockUser(row.id)
+                }}
+              >
+                <i className="fa-solid fa-lock"></i>
+              </Button>
+            )}
+
+            {row.status == 'block' && (
+              <Button
+                className="!bg-green-700"
+                onClick={() => {
+                  handleUnlockUser(row.id)
+                }}
+              >
+                <i className="fa-duotone fa-lock-open"></i>
+              </Button>
+            )}
+            {row.status != 'register' && (
+              <Button
+                onClick={() => {
+                  handleResestPassword(row.id)
+                }}
+              >
+                <i className="fa-solid fa-rotate"></i>
+              </Button>
+            )}
             <Button
               onClick={() => {
-                navigate(ROUTES_ADMIN.ORDER.UPDATE.replace(':id', row.id))
+                navigate(ROUTES_ADMIN.USER.UPDATE.replace(':id', row.id))
               }}
             >
               <i className="fa-regular fa-pen-to-square"></i>
@@ -105,19 +114,16 @@ const Order = () => {
 
   const statusList = [
     { id: 0, value: '', name: 'all' },
-    { id: 1, value: 'wait', name: 'wait' },
-    { id: 2, value: 'approve', name: 'approve' },
-    { id: 3, value: 'cancel', name: 'cancel' },
-    { id: 4, value: 'rent', name: 'rent' },
-    { id: 5, value: 'deny', name: 'deny' },
-    { id: 6, value: 'complete', name: 'complete' },
+    { id: 1, value: 'register', name: 'register' },
+    { id: 2, value: 'active', name: 'active' },
+    { id: 3, value: 'block', name: 'block' },
   ]
   const sortList = [
+    { id: 0, value: '', name: 'all' },
+    { id: 1, value: 'name,asc', name: 'Name' },
     { id: 2, value: 'created_at,desc', name: 'Latest added date' },
     { id: 3, value: 'created_at,asc', name: 'Oldest added date' },
-    { id: 4, value: 'start_date,asc', name: 'Earliest start date' },
-    { id: 5, value: 'start_date,desc', name: 'Latest start date' },
-    { id: 6, value: '', name: 'all' },
+    { id: 6, value: 'phone_number,asc', name: 'Phone number' },
   ]
 
   const {
@@ -131,12 +137,12 @@ const Order = () => {
     defaultValues: defaultValues,
   })
 
-  const fetchOrders = params => {
+  const fetchUsers = params => {
     showLoading()
-    orderService
+    userService
       .list(params)
       .then(({ data, meta }) => {
-        setOrders(data)
+        setUsers(data)
         setPagination(setPaginationData(meta))
       })
       .catch(err => {
@@ -149,28 +155,108 @@ const Order = () => {
 
   const handleChangePage = selected => {
     setPagination({ ...pagination, currentPage: selected })
-    fetchOrders({ ...dataSearch, page: selected })
+    fetchUsers({ ...dataSearch, page: selected })
+  }
+  const blockUser = id => {
+    userService
+      .block(id)
+      .then(({ message }) => {
+        Toast.success(message)
+        fetchUsers({ ...dataSearch, page: pagination.currentPage })
+      })
+      .catch(err => {
+        handleResponseError(err)
+      })
+      .finally(() => {
+        hideLoading()
+      })
+  }
+
+  const unlockUser = id => {
+    userService
+      .active(id)
+      .then(({ message }) => {
+        Toast.success(message)
+        fetchUsers({ ...dataSearch, page: pagination.currentPage })
+      })
+      .catch(err => {
+        handleResponseError(err)
+      })
+      .finally(() => {
+        hideLoading()
+      })
+  }
+
+  const resetPass = id => {
+    userService
+      .resetPassword(id)
+      .then(({ message }) => {
+        Toast.success(message)
+      })
+      .catch(err => {
+        handleResponseError(err)
+      })
+      .finally(() => {
+        hideLoading()
+      })
+  }
+
+  const handleBlockUser = id => {
+    Alert.alert('Cofirm block user', () => blockUser(id))
+  }
+
+  const handleUnlockUser = id => {
+    Alert.alert('Cofirm unlock user', () => unlockUser(id))
+  }
+
+  const handleResestPassword = id => {
+    Alert.alert('Cofirm reset password user', () => resetPass(id))
   }
   const onSubmit = fields => {
-    if (fields.moto_type_id == -1) {
-      fields = {
-        ...fields,
-        moto_type_id: null,
-      }
-    }
-    console.log(fields)
-    fetchOrders(fields)
     setDataSearch(fields)
+    fetchUsers(fields)
+  }
+
+  const exportExcel = () => {
+    userService
+      .exportExcel(dataSearch)
+      
+      .then(( blob) => {
+        console.log(blob)
+        // const link = document.createElement('a')
+        // link.href = blob
+        // link.setAttribute('download', 'filename.xlsx' ?? data.headers.filename)
+        // document.body.appendChild(link)
+        // link.click()
+
+        // const data = await apiClient.get(url, {
+        //   responseType: 'blob',
+        // })
+        const blobS = window.URL.createObjectURL(new Blob([blob.data]))
+        const link = document.createElement('a')
+        link.href = blobS
+        link.setAttribute('download', 'users.csv' ?? data.headers.filename)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+      })
+      .catch(err => {
+        handleResponseError(err)
+      })
+      .finally(() => {
+        hideLoading()
+      })
   }
 
   useEffect(() => {
-    setSidebarActive(ROUTES_ADMIN.ORDER.INDEX)
-    fetchOrders()
+    setSidebarActive(ROUTES_ADMIN.USER.INDEX)
+    fetchUsers()
   }, [])
 
   return (
     <>
-      <h1 className="text-3xl mb-8">Order</h1>
+      <h1 className="text-3xl mb-8">User</h1>
       <div className="bg-white rounded p-5 shadow space-y-6">
         <div className="flex">
           <form className="flex gap-2 flex-wrap" onSubmit={handleSubmit(onSubmit)}>
@@ -179,8 +265,8 @@ const Order = () => {
                 <svg
                   className="h-6 w-6"
                   fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  strokewinecap="round"
+                  strokewinejoin="round"
                   strokeWidth="2"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -192,7 +278,7 @@ const Order = () => {
               <Input
                 type="text"
                 control={control}
-                name="phone_number"
+                name="name"
                 className="text-sm sm:text-base placeholder-gray-500 pl-10 pr-4 rounded-lg border border-gray-300 w-full h-10 focus:outline-none focus:border-indigo-400"
                 placeholder="Search..."
               />
@@ -223,10 +309,13 @@ const Order = () => {
               <span>Tìm kiếm</span>
             </Button>
           </form>
+          <Button className="ml-auto gap-2" onClick={exportExcel}>
+            <span>Export excel</span>
+          </Button>
         </div>
         <Table
           columns={columns}
-          rows={orders}
+          rows={users}
           pagination={pagination}
           handleChangePage={selected => handleChangePage(selected)}
         />
@@ -235,4 +324,4 @@ const Order = () => {
   )
 }
 
-export default Order
+export default User
