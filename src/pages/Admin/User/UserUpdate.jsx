@@ -44,7 +44,7 @@ const UserUpdate = () => {
     userService
       .show(id)
       .then(data => {
-        reset(data[0])
+        reset(data)
       })
       .catch(err => {
         //

@@ -4,8 +4,6 @@ import { Button, Input, Select, Toast, Table, Alert } from '@/components/UI'
 import { setErrorForInput } from '@/utils/handleErrors'
 import { useEffect, useState } from 'react'
 import orderService from '@/services/api/admin/orderService'
-import { priceString } from '@/utils/helpers'
-
 
 const FormCofirmPayment = props => {
   const { setIsOpenModal, order, transactionColumns, fetchOrder } = props
@@ -106,10 +104,10 @@ const FormCofirmPayment = props => {
       <div className="flex justify-end items-end mt-3">
         <p className="font-semibold text-lg">
           Tổng tiền:{' '}
-          {priceString(order.transactions.reduce(
+          {order.transactions.reduce(
             (accumulator, currentTransaction) => accumulator + currentTransaction.cost,
             0,
-          ))}
+          )}
         </p>
         <Button type="button" className="ml-auto mb-3" onClick={handleConfirm}>
           Payment

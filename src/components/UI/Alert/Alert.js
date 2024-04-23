@@ -28,7 +28,16 @@ export const Alert ={
       }
     });
     return file
-  }
+  },
+  async input(title,placeholder){
+    const { value: email } = await Swal.fire({
+      title: title,
+      input: "text",
+      inputPlaceholder: placeholder
+    });
+    
+    return email
+  },
 }
 
 export default Alert

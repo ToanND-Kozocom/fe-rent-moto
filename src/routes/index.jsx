@@ -11,6 +11,7 @@ const Moto = lazy(() => import('@/pages/Admin/Moto/Moto'))
 const MotoDetail = lazy(() => import('@/pages/Admin/Moto/MotoDetail'))
 const MotoCreate = lazy(() => import('@/pages/Admin/Moto/MotoCreate'))
 const Order = lazy(() => import('@/pages/Admin/Order/Order'))
+const OrderError = lazy(() => import('@/pages/Admin/OrderError/OrderError'))
 const OrderUpdate = lazy(() => import('@/pages/Admin/Order/OrderUpdate'))
 const User = lazy(() => import('@/pages/Admin/User/User'))
 const UserUpdate = lazy(() => import('@/pages/Admin/User/UserUpdate'))
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
         element: <Order />,
       },
       {
+        path: ROUTES_ADMIN.ORDER.ERROR,
+        element: <OrderError />,
+      },
+      {
         path: ROUTES_ADMIN.ORDER.UPDATE,
         element: <OrderUpdate />,
       },
@@ -59,7 +64,8 @@ const router = createBrowserRouter([
       {
         path: ROUTES_ADMIN.USER.UPDATE,
         element: <UserUpdate />,
-      },{
+      },
+      {
         path: ROUTES_ADMIN.RENT_PACKAGES,
         element: <RentPackage />,
       },
@@ -72,13 +78,13 @@ const router = createBrowserRouter([
   {
     path: ROUTES_USER.HOME,
     element: <MainLayoutUser />,
-    children:[
+    children: [
       {
         path: ROUTES_USER.HOME,
         element: <HomeUser />,
       },
     ],
-  }
+  },
 ])
 
 const Routes = () => {

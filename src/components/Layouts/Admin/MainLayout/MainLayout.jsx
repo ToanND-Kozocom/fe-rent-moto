@@ -3,8 +3,11 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import Header from '@/components/Partials/Admin/Header'
 import Sidebar from '@/components/Partials/Admin/Sidebar'
 import { useAuth } from '@/contexts/auth'
+import { Toast } from '@/components/UI'
 import { ROUTES_AUTH } from '@/config/routes'
 import apiClient from '@/services/api'
+import Pusher from 'pusher-js'
+import { appConfig } from '@/config/app'
 
 const MainLayout = () => {
   const [showSidebar, setShowSidebar] = useState(false)
@@ -14,7 +17,22 @@ const MainLayout = () => {
   useEffect(() => {
     if (!authToken) {
       navigate(ROUTES_AUTH.LOGIN, { replace: true })
+      return
     }
+    const pusher = new Pusher(appConfig.pusher.appKey, {
+      cluster: appConfig.pusher.cluster,
+      channelAuthorization: {
+        endpoint: appConfig.pusher.endpoint,
+        transport: 'jsonp',
+        params: {
+          token: authToken,
+        },
+      },
+    })
+    const channel = pusher.subscribe(appConfig.pusher.adminChanel)
+    channel.bind('admin-issue-orders', function ({ message }) {
+      Toast.success(message)
+    })
   }, [authToken])
 
   return (

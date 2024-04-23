@@ -96,7 +96,7 @@ const MotoCreate = () => {
   }
 
   const handleImportCsv = async () => {
-    const file = await Alert.inputCsv('Nhập')
+    const file = await Alert.inputCsv('Input CSV')
     if (file) {
       showLoading()
       const payload = { file: file }
@@ -108,8 +108,10 @@ const MotoCreate = () => {
         .catch(err => {
           Toast.error(err.response.data.message)
           console.log(err.response.data)
-          setImportErrors(err.response.data.data_errors)
-          setIsOpenModal(true)
+          if(err.response.data.data_errors){
+            setImportErrors(err.response.data.data_errors)
+            setIsOpenModal(true)
+          }
         })
         .finally(() => {
           hideLoading()
