@@ -66,16 +66,16 @@ const Table = props => {
             {rows?.length ? (
               rows?.map((row, index) => {
                 return (
-                  <tr key={index} className="bg-white border-b">
+                  <tr key={index} className={`bg-white border-b`}>
                     {columns?.map((column, index) => {
-                      const { getAction, valueGetter, field, handleName } = column
+                      const { getAction, valueGetter, field, handleName, classNameTd} = column
                       return (
                         <td
                           key={index}
                           onClick={() => {
                             onRowClick && onRowClick(row)
                           }}
-                          className="px-6 py-4 text-gray-900"
+                          className={`px-6 py-4 text-gray-900 ${classNameTd ? classNameTd(row): '' }`}
                         >
                           {valueGetter ? valueGetter(row) : getAction ? getAction(row) : row[field]}
                         </td>

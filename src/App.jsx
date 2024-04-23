@@ -4,6 +4,8 @@ import { GlobalStyle, LoadingOverlay } from './components/UI'
 import LoadingProvider from './providers/LoadingProvider'
 import SidebarActiveProvider from './providers/SidebarActiveProvider'
 import AuthProvider from './providers/AuthProvider'
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 
 function App() {
   return (

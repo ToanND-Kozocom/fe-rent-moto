@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useSidebarActive } from '@/contexts/sidebarActive'
 import { ROUTES_ADMIN } from '@/config/routes'
 import { useLoading } from '@/contexts/loading'
@@ -9,6 +9,10 @@ import { Table, Input, Button, Select, Toast, Alert, Modal } from '@/components/
 import orderService from '@/services/api/admin/orderService'
 import { setErrorForInput } from '@/utils/handleErrors'
 import FormCofirmPayment from './FormConfirmPayment'
+import FormSearchMotoChange from './FormSearchMotoChange'
+import FormDenyOrder from './FormDenyOrder'
+import { priceString } from '@/utils/helpers'
+
 
 const OrderUpdate = () => {
   const { setSidebarActive } = useSidebarActive()
@@ -18,6 +22,9 @@ const OrderUpdate = () => {
   const [order, setOrder] = useState()
   const [transactions, setTransactions] = useState()
   const [isOpenModal, setIsOpenModal] = useState(false)
+  const [isOpenModalChangeMoto, setIsOpenModalChangeMoto] = useState(false)
+  const [isOpenModalDenyOrder, setIsOpenModalDenyOrder] = useState(false)
+  const [orderDetailsOpen, setOderDetailsOpen] = useState(null)
 
   const {
     control,
@@ -43,15 +50,37 @@ const OrderUpdate = () => {
   ]
 
   const motoColumns = [
+    // {
+    //   headerName: 'detail id',
+    //   field: 'id',
+    //   classNameTd: row => {
+    //     return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
+    //   },
+    // },
     {
       headerName: 'ID',
       field: 'id',
+      valueGetter: row => (
+        <Link
+          className="text-blue-700 text-base hover:underline"
+          to={ROUTES_ADMIN.MOTO.UPDATE.replace(':id', row.moto.id)}
+        >
+          {row.moto.id ?? ''}
+        </Link>
+      ),
+
+      classNameTd: row => {
+        return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
+      },
     },
     {
       headerName: 'Moto',
       field: 'moto',
       valueGetter: row => {
         return row.moto.name ?? ''
+      },
+      classNameTd: row => {
+        return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
       },
     },
     {
@@ -60,10 +89,53 @@ const OrderUpdate = () => {
       valueGetter: row => {
         return row.moto.license_plate ?? ''
       },
+      classNameTd: row => {
+        return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
+      },
     },
     {
       headerName: 'price',
       field: 'price',
+      classNameTd: row => {
+        return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
+      },
+      valueGetter: row =>{
+        return priceString(row.price)
+      }
+    },
+    {
+      headerName: 'status',
+      field: 'status',
+      valueGetter: row => {
+        return row.moto.status ?? ''
+      },
+      classNameTd: row => {
+        return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
+      },
+    },
+    {
+      headerName: '',
+      field: 'status',
+      valueGetter: row => (
+        <>
+          {orderCanUpdateStatus.includes(order.status) && (
+            <div className="">
+              <Button
+                type="button"
+                onClick={() => {
+                  setOderDetailsOpen(row)
+                  setIsOpenModalChangeMoto(true)
+                }}
+              >
+                <i className="fa-solid fa-rotate"></i>
+              </Button>
+            </div>
+          )}
+        </>
+      ),
+      classNameTd: row => {
+        return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
+      },
     },
   ]
 
@@ -99,6 +171,9 @@ const OrderUpdate = () => {
     {
       headerName: 'cost',
       field: 'cost',
+      valueGetter: row =>{
+        return priceString(row.cost)
+      }
     },
     {
       headerName: 'descriptions',
@@ -107,6 +182,10 @@ const OrderUpdate = () => {
     {
       headerName: 'status',
       field: 'status',
+    },
+    {
+      headerName: 'Date payment',
+      field: 'date_payment',
     },
     {
       headerName: '',
@@ -120,7 +199,7 @@ const OrderUpdate = () => {
                 handlePaymentDeposit()
               }}
             >
-              <i class="fa-sharp fa-solid fa-check"></i>
+              <i className="fa-sharp fa-solid fa-check"></i>
             </Button>
           )
         }
@@ -129,7 +208,7 @@ const OrderUpdate = () => {
     },
   ]
 
-  const fetchOrder = id => {
+  const fetchOrder = () => {
     showLoading()
     orderService
       .show(id)
@@ -149,6 +228,30 @@ const OrderUpdate = () => {
 
   const handleConfirmPayment = () => {
     setIsOpenModal(true)
+  }
+
+  const handleDenyPayment = async () => {
+    setIsOpenModalDenyOrder(true)
+  }
+
+  const denyOrder = reason => {
+    showLoading()
+    orderService
+      .deny(id, { reason_deny: reason })
+      .then(data => {
+        Toast.success('Deny successful')
+        fetchOrder(id)
+      })
+      .catch(err => {
+        const errorArrays = Object.values(err?.response?.data?.errors)
+        const messageErrors = errorArrays
+          .reduce((accumulator, currentValue) => accumulator.concat(currentValue), [])
+          .join('\n')
+        Toast.error(messageErrors)
+      })
+      .finally(() => {
+        hideLoading()
+      })
   }
 
   const update = data => {
@@ -174,6 +277,8 @@ const OrderUpdate = () => {
     }
     update(data)
   }
+  const motoReadyRentStatus = ['active', 'rent']
+  const orderCanUpdateStatus = ['wait', 'approve']
 
   useEffect(() => {
     setSidebarActive(ROUTES_ADMIN.ORDER.INDEX)
@@ -181,119 +286,199 @@ const OrderUpdate = () => {
   }, [])
 
   return (
-    <form
-      className="mt-4 flex flex-col bg-gray-100 rounded-lg p-4 shadow-sm"
-      onSubmit={handleSubmit(onSubmit)}
-    >
-      <h1 className="font-bold text-2xl text-gray-700">Update order</h1>
-      <Table className="mt-4" columns={motoColumns} rows={motos} />
-
-      <Table className="mt-4" columns={transactionColumns} rows={transactions} />
-
-      {order?.status == 'approve' && (
-        <Button
-          type="button"
-          className="mt-5 w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-          onClick={handleConfirmPayment}
-        >
-          Cofirm payment
-        </Button>
-      )}
-
-      <div className="mt-4">
-        <label className="text-black">ID</label>
-        <Input
-          className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
-          placeholder="id"
-          name="id"
-          disabled={true}
-          control={control}
-        />
-      </div>
-
-      <div className="mt-4">
-        <label className="text-black">Start date</label>
-        <Input
-          className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
-          placeholder="id"
-          type="date"
-          name="start_date"
-          disabled={true}
-          control={control}
-        />
-      </div>
-
-      <div className="mt-4">
-        <label className="text-black">End date</label>
-        <Input
-          className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
-          placeholder="id"
-          type="date"
-          name="end_date"
-          disabled={true}
-          control={control}
-        />
-      </div>
-
-      <div className="mt-4">
-        <label className="text-black">Name</label>
-        <Input
-          type="text"
-          className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
-          placeholder="name"
-          disabled={true}
-          name="customer_name"
-          control={control}
-        />
-      </div>
-
-      <div className="mt-4">
-        <label className="text-black">User note</label>
-        <Input
-          className="w-full bg-white rounded-md border-gray-300 text-black px-2 py-1"
-          placeholder="user note"
-          name="user_note"
-          control={control}
-          error={userNoteError}
-        />
-      </div>
-
-      <div className="mt-4">
-        <label className="text-black">Phone number</label>
-        <Input
-          className="w-full bg-white rounded-md border-gray-300 text-black px-2 py-1"
-          placeholder="license_plate"
-          type="text"
-          name="phone_number"
-          control={control}
-          error={phoneNumberError}
-        />
-      </div>
-
-      <Modal
-        isOpen={isOpenModal}
-        close={() => {
-          setIsOpenModal(false)
-        }}
-        afterLeave={() => {
-          setMotoTypeEdit(null)
-        }}
+    <>
+      <form
+        className="mt-4 flex flex-col bg-gray-100 rounded-lg p-4 shadow-sm"
+        onSubmit={handleSubmit(onSubmit)}
       >
-        <FormCofirmPayment
-          setIsOpenModal={setIsOpenModal}
+        <h1 className="font-bold text-2xl text-gray-700">Update order</h1>
+        <Table className="mt-4" columns={motoColumns} rows={motos} />
+
+        <Table className="mt-4" columns={transactionColumns} rows={transactions} />
+
+        {order?.status == 'approve' && (
+          <Button
+            type="button"
+            className="mt-5 w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+            onClick={handleConfirmPayment}
+          >
+            Cofirm payment
+          </Button>
+        )}
+
+        {orderCanUpdateStatus.includes(order?.status) && (
+          <Button
+            type="button"
+            className="mt-5 w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+            onClick={handleDenyPayment}
+          >
+            Deny
+          </Button>
+        )}
+
+        <div className="mt-4">
+          <label className="text-black">ID</label>
+          <Input
+            className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="id"
+            name="id"
+            disabled={true}
+            control={control}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-black">Status</label>
+          <Input
+            className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="status"
+            name="status"
+            disabled={true}
+            control={control}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-black">Rent package percent</label>
+          <Input
+            className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="rent_package_percent"
+            name="rent_package_percent"
+            disabled={true}
+            control={control}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-black">Start date</label>
+          <Input
+            className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="id"
+            type="date"
+            name="start_date"
+            disabled={true}
+            control={control}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-black">End date</label>
+          <Input
+            className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="id"
+            type="date"
+            name="end_date"
+            disabled={true}
+            control={control}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-black">Name</label>
+          <Input
+            type="text"
+            className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="name"
+            disabled={true}
+            name="customer_name"
+            control={control}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-black">Reason deny</label>
+          <Input
+            type="text"
+            className="w-full bg-gray-300 rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="reason_deny"
+            disabled={true}
+            name="reason_deny"
+            control={control}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-black">User note</label>
+          <Input
+            className="w-full bg-white rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="user note"
+            name="user_note"
+            control={control}
+            error={userNoteError}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-black">Phone number</label>
+          <Input
+            className="w-full bg-white rounded-md border-gray-300 text-black px-2 py-1"
+            placeholder="license_plate"
+            type="text"
+            name="phone_number"
+            control={control}
+            error={phoneNumberError}
+          />
+        </div>
+
+        <Modal
+          isOpen={isOpenModal}
+          close={() => {
+            setIsOpenModal(false)
+          }}
+          afterLeave={() => {
+            setMotoTypeEdit(null)
+          }}
+        >
+          <FormCofirmPayment
+            setIsOpenModal={setIsOpenModal}
+            order={order}
+            transactionColumns={transactionColumns}
+            fetchOrder={fetchOrder}
+          />
+        </Modal>
+
+        <Button
+          type="submit"
+          className="mt-5 w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+        >
+          Update
+        </Button>
+      </form>
+      <Modal
+        isOpen={isOpenModalChangeMoto}
+        close={() => {
+          setIsOpenModalChangeMoto(false)
+        }}
+        // afterLeave={() => {
+        //   setMotoTypeEdit(null)
+        // }}
+      >
+        <FormSearchMotoChange
+          setIsOpenModalChangeMoto={setIsOpenModalChangeMoto}
           order={order}
-          transactionColumns={transactionColumns}
+          orderDetail={orderDetailsOpen}
+          fetchOrder={fetchOrder}
+          afterLeave={() => {
+            setOderDetailsOpen(null)
+          }}
+        />
+      </Modal>
+      <Modal
+        isOpen={isOpenModalDenyOrder}
+        close={() => {
+          setIsOpenModalDenyOrder(false)
+        }}
+        // afterLeave={() => {
+        //   setMotoTypeEdit(null)
+        // }}
+      >
+        <FormDenyOrder
+          setIsOpenModalDenyOrder={setIsOpenModalDenyOrder}
+          order={order}
           fetchOrder={fetchOrder}
         />
       </Modal>
-
-      <Button
-        type="submit"
-        className="mt-5 w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-      >
-        Update
-      </Button>
-    </form>
+    </>
   )
 }
 export default OrderUpdate

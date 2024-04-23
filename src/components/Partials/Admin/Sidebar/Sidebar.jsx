@@ -31,6 +31,12 @@ const NAV_ITEMS = [
     text: 'Order',
   },
   {
+    to: ROUTES_ADMIN.ORDER.ERROR,
+    icon: 'fa-sharp fa-thin fa-table-list',
+    iconActive: 'fa-sharp fa-solid fa-table-list',
+    text: 'Order error',
+  },
+  {
     to: ROUTES_ADMIN.USER.INDEX,
     icon: 'fa-sharp fa-light fa-users',
     iconActive: 'fa-sharp fa-solid fa-users',
@@ -78,7 +84,7 @@ const Sidebar = () => {
                   className={`flex flex-row items-center h-10 px-3 rounded-lg  ${
                     isActive ? 'bg-gray-100' : 'hover:bg-gray-100 hover:text-gray-700 text-gray-300'
                   }`}
-                  onClick={() => setShowSidebar(false)}
+                  // onClick={() => setShowSidebar(false)}
                 >
                   <span className="flex items-center justify-center text-lg">
                     <i className={isActive ? item.iconActive : item.icon}></i>

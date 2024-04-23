@@ -19,6 +19,7 @@ export const ROUTES_ADMIN = {
   ORDER: {
     INDEX: '/admin/orders',
     UPDATE: '/admin/orders/:id',
+    ERROR: '/admin/orders/error'
   },
   USER: {
     INDEX: '/admin/users',
