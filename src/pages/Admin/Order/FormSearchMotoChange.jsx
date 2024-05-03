@@ -53,13 +53,6 @@ const FormSearchMotoChange = props => {
       },
     },
     {
-      headerName: 'price after apply rent package',
-      field: 'price',
-      valueGetter: row => {
-        return priceString((row.price * order.rent_package_percent) / 100)
-      },
-    },
-    {
       headerName: 'moto type',
       field: 'moto_type',
       valueGetter: row => {
@@ -108,6 +101,7 @@ const FormSearchMotoChange = props => {
       ...params,
       start_date: order.start_date,
       end_date: order.end_date,
+      status: 'active',
     }
     showLoading()
     motoService
@@ -147,12 +141,17 @@ const FormSearchMotoChange = props => {
     fetchMotos({ ...dataSearch, page: selected })
   }
 
-  const handleChangeMoto = moto => {
-    Alert.alert('Cofirm change moto', () => changeMoto(moto))
+  const handleChangeMoto = async moto => {
+    const price = await Alert.input('Input price', 'Input price', 'number')
+    if (price) {
+      Alert.alert(`Cofirm change moto with price: ${priceString(price * 1)}`, () =>
+        changeMoto(moto, price),
+      )
+    }
   }
-  const changeMoto = moto => {
+  const changeMoto = (moto, price) => {
     orderDetailService
-      .updateMoto(orderDetail.id, { moto_id: moto.id })
+      .updateMoto(orderDetail.id, { moto_id: moto.id, price: price })
       .then(({ message }) => {
         Toast.success(message)
         setIsOpenModalChangeMoto(false)
@@ -186,8 +185,9 @@ const FormSearchMotoChange = props => {
 
   return (
     <>
-      <h1 className="text-3xl mb-8">Moto</h1>
       <div className="bg-white rounded p-5 shadow space-y-6">
+        <h1 className="text-3xl mb-8">Change moto</h1>
+        <h1 className="text-3xl mb-8">Current price: {priceString(orderDetail.price)}</h1>
         <div className="flex">
           <form className="flex gap-2" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex gap-2 flex-wrap">

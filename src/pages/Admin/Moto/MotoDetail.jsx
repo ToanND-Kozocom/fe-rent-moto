@@ -92,12 +92,13 @@ const MotoDetail = () => {
         reset(data)
         setValue('moto_type', data['moto_type']['id'])
         setCalendarMoto(
+          
           data.calendar.map(item => {
             return {
               id: item.id,
               start: item.start,
               end: item.end,
-              title: item.status,
+              title: item.customer_name,
               status: item.status,
             }
           }),

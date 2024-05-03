@@ -13,13 +13,13 @@ import FormSearchMotoChange from './FormSearchMotoChange'
 import FormDenyOrder from './FormDenyOrder'
 import { priceString } from '@/utils/helpers'
 
-
 const OrderUpdate = () => {
   const { setSidebarActive } = useSidebarActive()
   const { id } = useParams()
   const { showLoading, hideLoading } = useLoading()
   const [motos, setMotos] = useState()
   const [order, setOrder] = useState()
+  const [holidays, setHolidays] = useState()
   const [transactions, setTransactions] = useState()
   const [isOpenModal, setIsOpenModal] = useState(false)
   const [isOpenModalChangeMoto, setIsOpenModalChangeMoto] = useState(false)
@@ -47,6 +47,55 @@ const OrderUpdate = () => {
     { id: 4, value: 'rent', name: 'rent' },
     { id: 5, value: 'deny', name: 'deny' },
     { id: 6, value: 'complete', name: 'complete' },
+  ]
+
+  const typeList = [
+    { id: 1, value: 1, name: 'DEPOSIT' },
+    { id: 2, value: 2, name: 'PAYMENT' },
+    { id: 3, value: 3, name: 'INCURRED' },
+    { id: 4, value: 4, name: 'DISCOUNT' },
+  ]
+
+  const statusTransactionList = [
+    { id: 1, value: 1, name: 'UNPAID' },
+    { id: 2, value: 2, name: 'PAID' },
+    { id: 3, value: 3, name: 'REFUND' },
+  ]
+
+  const holidayColumns = [
+    {
+      headerName: 'Name holiday',
+      field: 'holiday_name',
+      valueGetter: row => {
+        return row.holiday.name
+      },
+    },
+    {
+      headerName: 'Date',
+      field: 'holiday_name',
+      valueGetter: row => {
+        return row.holiday.date
+      },
+    },
+    {
+      headerName: 'Precent',
+      field: 'precent',
+      classNameTd: row => {
+        return row.precent - 100 > 0 ? 'text-green-600' : 'text-red-600'
+      },
+      valueGetter: row => (
+        <>
+          <p className="flex gap-1">
+            {Math.abs(row.precent - 100)}%
+            {row.precent - 100 > 0 ? (
+              <i className="fa-solid fa-caret-up"></i>
+            ) : (
+              <i class="fa-solid fa-sort-down"></i>
+            )}
+          </p>
+        </>
+      ),
+    },
   ]
 
   const motoColumns = [
@@ -99,9 +148,19 @@ const OrderUpdate = () => {
       classNameTd: row => {
         return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
       },
-      valueGetter: row =>{
+      valueGetter: row => {
         return priceString(row.price)
-      }
+      },
+    },
+    {
+      headerName: 'Total pay',
+      field: 'total_pay',
+      classNameTd: row => {
+        return !motoReadyRentStatus.includes(row.moto.status) ? 'text-red-600' : ''
+      },
+      valueGetter: row => {
+        return priceString(row.total_pay)
+      },
     },
     {
       headerName: 'status',
@@ -167,13 +226,19 @@ const OrderUpdate = () => {
     {
       headerName: 'type',
       field: 'type',
+      valueGetter: row => {
+        const typeRow = typeList.find((type)=>{
+          return type.value == row.type
+        })
+        return typeRow.name
+      },
     },
     {
       headerName: 'cost',
       field: 'cost',
-      valueGetter: row =>{
+      valueGetter: row => {
         return priceString(row.cost)
-      }
+      },
     },
     {
       headerName: 'descriptions',
@@ -182,6 +247,12 @@ const OrderUpdate = () => {
     {
       headerName: 'status',
       field: 'status',
+      valueGetter: row => {
+        const typeRow = statusTransactionList.find((type)=>{
+          return type.value == row.status
+        })
+        return typeRow.name
+      },
     },
     {
       headerName: 'Date payment',
@@ -191,7 +262,7 @@ const OrderUpdate = () => {
       headerName: '',
       field: '',
       valueGetter: row => {
-        if (row.type === 'deposit' && row.status === 'unpaid' && order.status === 'wait') {
+        if (row.type === 1 && row.status === 1 && order.status === 'wait') {
           return (
             <Button
               type="button"
@@ -215,6 +286,7 @@ const OrderUpdate = () => {
       .then(data => {
         reset(data)
         setMotos(data.details)
+        setHolidays(data.holidays)
         setOrder(data)
         setTransactions(data.transactions)
       })
@@ -292,6 +364,8 @@ const OrderUpdate = () => {
         onSubmit={handleSubmit(onSubmit)}
       >
         <h1 className="font-bold text-2xl text-gray-700">Update order</h1>
+        <Table className="mt-4" columns={holidayColumns} rows={holidays} />
+
         <Table className="mt-4" columns={motoColumns} rows={motos} />
 
         <Table className="mt-4" columns={transactionColumns} rows={transactions} />
