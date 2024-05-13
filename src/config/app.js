@@ -8,4 +8,5 @@ export const appConfig = {
     adminChanel: import.meta.env.VITE_ADMIN_CHANEL,
     endpoint: import.meta.env.VITE_PUSHER_ENDPOINT,
   },
+  defaultImageMoto: import.meta.env.VITE_IMAGE_DEFAULT_MOTO,
 }

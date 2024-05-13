@@ -4,6 +4,12 @@ import withReactContent from 'sweetalert2-react-content'
 const MySwal = withReactContent(Swal)
 
 export const Alert = {
+  notifications(title, icon) {
+    MySwal.fire({
+      title: title,
+      icon: icon ?? 'warning',
+    })
+  },
   alert(title, callback) {
     MySwal.fire({
       title: title,

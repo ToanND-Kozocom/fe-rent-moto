@@ -57,7 +57,7 @@ const RentPackage = () => {
       valueGetter: row => {
         return row.details.map(detail => (
           <p key={detail.id}>
-            {detail.rent_days_min}-{detail.rent_days_max}: {detail.percent}%
+            {detail.rent_days_max}: {detail.percent}%
           </p>
         ))
       },
