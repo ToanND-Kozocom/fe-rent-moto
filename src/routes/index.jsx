@@ -19,6 +19,10 @@ const RentPackage = lazy(() => import('@/pages/Admin/RentPackage/RentPackage'))
 
 //User
 const HomeUser = lazy(() => import('@/pages/User/Home/Home'))
+const MotoUser = lazy(() => import('@/pages/User/Moto/Moto'))
+const CheckoutUser = lazy(() => import('@/pages/User/Checkout/Checkout'))
+const OrderUser = lazy(() => import('@/pages/User/Order/Order'))
+const OrderDetailUser = lazy(() => import('@/pages/User/OrderDetail/OrderDetail'))
 
 const router = createBrowserRouter([
   {
@@ -82,6 +86,22 @@ const router = createBrowserRouter([
       {
         path: ROUTES_USER.HOME,
         element: <HomeUser />,
+      },
+      {
+        path: ROUTES_USER.MOTO,
+        element: <MotoUser />,
+      },
+      {
+        path: ROUTES_USER.CHECKOUT,
+        element: <CheckoutUser />,
+      },
+      {
+        path: ROUTES_USER.ORDER,
+        element: <OrderUser />,
+      },
+      {
+        path: ROUTES_USER.ORDER_DETAIL,
+        element: <OrderDetailUser />,
       },
     ],
   },

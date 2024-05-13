@@ -19,7 +19,7 @@ export const ROUTES_ADMIN = {
   ORDER: {
     INDEX: '/admin/orders',
     UPDATE: '/admin/orders/:id',
-    ERROR: '/admin/orders/error'
+    ERROR: '/admin/orders/error',
   },
   USER: {
     INDEX: '/admin/users',
@@ -35,4 +35,8 @@ export const ROUTES_ADMIN = {
 
 export const ROUTES_USER = {
   HOME: '/',
+  MOTO: '/moto/:id',
+  CHECKOUT: '/checkout/:id',
+  ORDER: '/orders',
+  ORDER_DETAIL: '/orders/:id',
 }

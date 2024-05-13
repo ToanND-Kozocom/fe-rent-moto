@@ -27,7 +27,7 @@ const FormCofirmPayment = props => {
     if(costIncurred !== 0){
       dataConfirmPayment = {
         incurred_cost: costIncurred,
-        descriptions,
+        incurred_description:descriptions,
       }
     }
 
